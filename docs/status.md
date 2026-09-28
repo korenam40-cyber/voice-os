@@ -5,7 +5,8 @@
 - **Step 1 (dictation):** per-phrase log `data/dictation/phrases.jsonl` added.
   The user dictates normally for a week; then fix only what the log shows.
 - **Step 2 (commands), English via Voiceitt -- built, not yet tried on Windows.**
-  In `voiceitt-bridge` (branch `claude/voiceitt-windows-voice-os-4pe1ln`):
+  Built first inside the bridge, then moved here (2026-09-28); the bridge's
+  pull request was closed unmerged, so the bridge is unchanged:
   - `commands.json`: wake word "computer" (Voiceitt never wrote "wick") + 56 commands (windows, apps, scrolling,
     tabs, editing, typing on/off, video and volume, "move to TV").
     A copy in `%APPDATA%\VoiceittBridge\commands.json` overrides it.
@@ -55,7 +56,8 @@ short.**
   enter", "delete" (new command), video = "start video" / "stop video"
   ("pause" is written "powers"). Did not come through: "copy that", "copy
   text", "paste ...", "oops", "redo". "put it back" added for redo, untested.
-- **Then:** build the bridge from `claude/voiceitt-windows-voice-os-4pe1ln`
-  on Windows and try "Computer, scroll down" for real.
+- **Next: the first run on Windows** (the user tries it on 2026-09-29). Build
+  with `dotnet publish -c Release`, close the bridge, run VoiceOS.exe, set up
+  the connector once, say "Computer, scroll down". Ask what they saw and heard.
 - **Open questions for Baby** (answer when ready): voice age and English
   accent; look (orb / drawn face / 3D); appear on the TV or not.
