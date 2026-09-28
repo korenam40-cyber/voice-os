@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Voice OS Connector",
+  "version": "1.0.0",
+  "description": "Hands Voiceitt's transcript to the Voice OS app running on this PC. Talks only to 127.0.0.1.",
+  "host_permissions": ["http://127.0.0.1:47623/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["https://*.voiceitt.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}

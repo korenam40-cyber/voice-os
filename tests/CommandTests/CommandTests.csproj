@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Plain checks for the voice-command logic, which has no Windows dependencies.
+       Run from the repo root: dotnet run, with the project tests/CommandTests. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Same runtime as the app; TestsTfm lets a machine with an older SDK run them. -->
+    <TestsTfm Condition="'$(TestsTfm)' == ''">net9.0</TestsTfm>
+    <TargetFramework>$(TestsTfm)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../VoiceCommands.cs;../../CommandListener.cs;../../KeyChord.cs;../../ToneWav.cs" />
+    <EmbeddedResource Include="../../commands.json" LogicalName="commands.json" />
+  </ItemGroup>
+</Project>

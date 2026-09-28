@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+
+    <!-- Single-file, self-contained publish so it runs as one double-click .exe -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <AssemblyName>VoiceOS</AssemblyName>
+  </PropertyGroup>
+
+  <!-- The window icon. ApplicationIcon above gives the .exe its icon in
+       Explorer and the taskbar; this copy is what the forms load at runtime,
+       since a single-file publish has no icon file on disk beside it. -->
+  <ItemGroup>
+    <EmbeddedResource Include="app.ico" LogicalName="app.ico" />
+  </ItemGroup>
+
+  <!-- The Chrome connector extension: real files in extension/, embedded so the single
+       exe can write them out for "Load unpacked". -->
+  <ItemGroup>
+    <EmbeddedResource Include="extension\manifest.json;extension\background.js;extension\content.js"
+                      LogicalName="ext/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- The command tests are their own project. -->
+  <ItemGroup>
+    <Compile Remove="tests/**" />
+    <None Remove="tests/**" />
+  </ItemGroup>
+
+  <!-- Voice commands ("Wick, scroll down"): the built-in list. A copy in
+       %APPDATA%\VoiceOS\commands.json replaces it, so commands can be changed
+       without rebuilding. -->
+  <ItemGroup>
+    <EmbeddedResource Include="commands.json" LogicalName="commands.json" />
+  </ItemGroup>
+
+  <!-- Spoken feedback for voice commands, with the voices built into Windows. -->
+  <ItemGroup>
+    <PackageReference Include="System.Speech" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>
