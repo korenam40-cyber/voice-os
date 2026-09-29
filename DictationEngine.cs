@@ -243,6 +243,7 @@ internal sealed class DictationEngine : IDisposable
         var done = _practice;
         _practice = null;
         Log?.Invoke($"PRACTICE finished: {done.Right} of {done.Attempts} attempts right.");
+        WritePracticeSummary(done);
     }
 
     /// <summary>Settles one practice utterance and checks it. Called on every poll.</summary>
@@ -264,6 +265,41 @@ internal sealed class DictationEngine : IDisposable
         }, attempt.Outcome == PracticeOutcome.Right ? "right" : "try again");
         PracticeUpdated?.Invoke(attempt);
         if (_practice.Done) StopPractice();
+    }
+
+    /// <summary>
+    /// A plain summary on the Desktop when practice ends: what was expected, and exactly what
+    /// Voiceitt wrote on every miss. The user opens it with a double-click and pastes it to
+    /// Claude, who picks better words from it (2026-09-29: the JSON log was hard to reach).
+    /// </summary>
+    private static void WritePracticeSummary(PracticeSession s)
+    {
+        try
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"Voice OS practice, {DateTime.Now:yyyy-MM-dd HH:mm}");
+            sb.AppendLine($"{s.Right} right of {s.Attempts} tries.");
+            sb.AppendLine();
+            if (s.Misses.Count == 0) sb.AppendLine("Every command was understood.");
+            else
+            {
+                sb.AppendLine("Misses -- the words to say, then what Voiceitt wrote:");
+                foreach (var m in s.Misses)
+                {
+                    string what = m.Outcome == PracticeOutcome.OtherCommand
+                        ? $"(understood as \"{m.MatchedInstead!.Phrases[0]}\")"
+                        : "(not understood)";
+                    sb.AppendLine($"- {m.Target?.Phrases[0]}  ->  \"{m.Heard}\"  {what}");
+                }
+            }
+            string path = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Voice OS practice results.txt");
+            System.IO.File.WriteAllText(path, sb.ToString());
+        }
+        catch
+        {
+            // The detailed log in %APPDATA% still has every attempt.
+        }
     }
 
     /// <summary>Every attempt, as text, so the phrasings can be tuned from real results.
