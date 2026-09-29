@@ -1,0 +1,39 @@
+# Builds VoiceOS.exe on every change and puts it on the "latest" release, so the
+# user downloads one ready file instead of building from source.
+name: Build VoiceOS.exe
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Check the command logic
+        run: dotnet run --project tests/CommandTests
+
+      - name: Build one self-contained VoiceOS.exe
+        run: dotnet publish VoiceOS.csproj -c Release -o out
+
+      - name: Put it on the download page
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view latest *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create latest --title "Voice OS - latest build" --notes "Download VoiceOS.exe below and double-click it. Close Voiceitt Bridge first."
+          }
+          gh release upload latest out/VoiceOS.exe --clobber
+          gh release edit latest --notes "Built from $($env:GITHUB_SHA.Substring(0,7)) on $(Get-Date -Format 'yyyy-MM-dd HH:mm') UTC. Download VoiceOS.exe below and double-click it. Close Voiceitt Bridge first."
