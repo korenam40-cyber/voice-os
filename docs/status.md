@@ -83,3 +83,12 @@ short.**
   The connector at first did not connect; the Desktop log and the panel light
   were added while finding out. It connected after the user redid the steps.
 - **Next:** first real commands ("Computer, scroll down"), then practice mode.
+
+## First practice (2026-09-29): 59 right of 81 tries
+
+Misses were nearly all Voiceitt near-spellings, now added as phrasings:
+open age, open male, minimal, crawl up, paid up, close up, cut back, water
+(quieter), keep forward / keep back (Voiceitt writes "skip" as "keep"),
+use sound. "open edge" also came out "open health" and, eight times, "keep";
+the user prefers "open browser", now the primary phrasing (it worked first
+try). These real misses are regression checks in tests/CommandTests.

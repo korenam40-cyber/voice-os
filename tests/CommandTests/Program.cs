@@ -109,6 +109,22 @@ Check("and it remembers the program and where it lives",
 Check("a command that isn't a program can't be connected", !copy.AssignApp("copy", @"C:\x.exe"));
 Check("the sounds are real WAV data", ToneWav.Make((880, 0.1)).Take(4).SequenceEqual("RIFF"u8.ToArray()));
 
+// What Voiceitt really wrote in the user's first practice (2026-09-29), each of which was
+// missed then. Every one must now select the right command -- and never a different one.
+var realMisses = new (string Heard, string Id)[]
+{
+    ("open age", "open-edge"), ("open male", "open-mail"), ("minimal", "minimize"), ("crawl up", "scroll-up"),
+    ("paid up", "page-up"), ("close up", "close-tab"), ("cut back", "cut"), ("water", "volume-down"),
+    ("keep forward", "skip-forward"), ("keep back", "skip-back"), ("use sound", "feedback-sound"),
+    // ...and ones that already worked, so a new phrasing can't steal them:
+    ("go to stop", "top"), ("nap right", "snap-right"), ("next tub", "next-tab"), ("Cancer", "cancel"),
+    ("close windows", "close-window"), ("restore windows", "restore"), ("open file", "open-files"),
+    ("Hide command", "hide-commands"), ("CLOSE tab", "close-tab"), ("rewind", "skip-back"),
+};
+var wrong = realMisses.Where(m => CommandMatcher.Match(m.Heard, set, out _)?.Command.Id != m.Id)
+    .Select(m => $"\"{m.Heard}\" -> {CommandMatcher.Match(m.Heard, set, out string why)?.Command.Id ?? why}").ToList();
+Check("what Voiceitt really wrote in practice selects the right command", wrong.Count == 0, string.Join("; ", wrong));
+
 // Practice: nothing runs; each attempt is checked against the command on screen.
 var practice = new PracticeSession(set);
 Check("practice covers the commands, not itself", practice.Count == set.Commands.Count(c => c.Action.Type != "practice"));
