@@ -995,7 +995,17 @@ internal sealed class MainForm : Form
     {
         if (InvokeRequired) { BeginInvoke(() => AppendLog(line)); return; }
         _log.AppendText($"[{DateTime.Now:HH:mm:ss}] {line}\r\n");
+        // Also to a file on the Desktop, so the user can open it with a double-click and paste
+        // it to Claude when something doesn't work (2026-09-29: the in-window log was cut off).
+        try
+        {
+            System.IO.File.AppendAllText(LogFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {line}\r\n");
+        }
+        catch { /* the on-screen log still has it */ }
     }
+
+    private static readonly string LogFile = System.IO.Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Voice OS log.txt");
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {

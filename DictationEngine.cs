@@ -95,6 +95,20 @@ internal sealed class DictationEngine : IDisposable
                 return;
             }
             _ext = server;
+            Log?.Invoke($"Chrome connector: Voice OS is listening on 127.0.0.1:{ExtensionServer.Port} (folder: {ConnectorInstaller.Folder}).");
+            // Say plainly if nothing arrives, instead of a button that just never changes.
+            var check = new System.Windows.Forms.Timer { Interval = 20_000 };
+            check.Tick += (_, _) =>
+            {
+                check.Stop();
+                check.Dispose();
+                if (_ext?.IsLive == true) return;
+                Log?.Invoke("Chrome connector: NOTHING has arrived from Chrome in 20 seconds. Check that "
+                    + $"the extension loaded in Chrome is the folder \"{ConnectorInstaller.Folder}\" "
+                    + "(its card says \"Voice OS Connector\"), that its switch is on, and that the Voiceitt "
+                    + "tab was reloaded (F5) after loading it.");
+            };
+            check.Start();
             if (changed)
                 Log?.Invoke("Chrome connector files were written/updated. If it's already installed, open chrome://extensions and press its reload button.");
         }
