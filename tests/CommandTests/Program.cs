@@ -124,6 +124,8 @@ var realMisses = new (string Heard, string Id)[]
     ("snap list", "snap-left"), ("knapsack", "snap-left"), ("paid down", "page-down"), ("new tube", "new-tab"),
     ("new pub", "new-tab"), ("top key", "tab"), ("dropped it", "paste"), ("cat", "cut"), ("keep for", "skip-forward"),
     ("reader", "redo"), ("read", "redo"),
+    // Third practice:
+    ("open man", "open-mail"), ("open face", "open-files"), ("high command", "hide-commands"),
 };
 var wrong = realMisses.Where(m => CommandMatcher.Match(m.Heard, set, out _)?.Command.Id != m.Id)
     .Select(m => $"\"{m.Heard}\" -> {CommandMatcher.Match(m.Heard, set, out string why)?.Command.Id ?? why}").ToList();
@@ -131,7 +133,11 @@ Check("what Voiceitt really wrote in practice selects the right command", wrong.
 
 // Numbers (user's request, 2026-09-29): exact or nothing, and every way Voiceitt might write one.
 var numbered = set.Commands.Where(c => c.Number != null).ToList();
-Check("every command has a number", numbered.Count == set.Commands.Count);
+// Voiceitt heard this user's 35 as "45" and 51 as "five" (third practice), so a number can
+// arrive as a different number. Commands that do harm when run by mistake are words only.
+var risky = new[] { "close-window", "close-tab", "delete", "cut", "this-is-browser", "this-is-mail", "this-is-terminal", "edit-commands" };
+Check("risky commands have no number", set.Commands.Where(c => risky.Contains(c.Id)).All(c => c.Number == null));
+Check("every other command has a number", set.Commands.Where(c => !risky.Contains(c.Id)).All(c => c.Number != null));
 Check("no two commands share a number", numbered.Select(c => c.Number).Distinct().Count() == numbered.Count);
 Check("the first digit is the group", numbered.GroupBy(c => c.Group).All(g => g.Select(c => c.Number / 10).Distinct().Count() <= 2));
 var n43 = set.Commands.First(c => c.Number == 43);

@@ -109,3 +109,18 @@ try). These real misses are regression checks in tests/CommandTests.
 - **Next:** a practice with numbers, while fresh, to see how Voiceitt writes
   them (digits? words? "for" for 4?). Add what it writes to the number parser
   only if it can't be confused with another number.
+
+## Third practice, numbers (2026-09-29 13:30): 59 right of 72
+
+- Single digits come out as words: 2 -> "to", 3 -> "sorry", 4 -> "for" (x3).
+  Not parsed as numbers, so harmless, but they don't work.
+- **A number heard as a different number**: 35 -> "45" (would run redo),
+  51 -> "five" (would run #5, "this is my browser", which rewrites the
+  command list). 32 -> "is 42", 44 -> "four people".
+  So thirty/forty and fifty-one/five get confused for this user's voice.
+- Done now: risky commands (close window, close tab, delete, cut, this is my
+  browser/mail/terminal, edit commands) have **no number** -- words only.
+  Added: open man, open face, high command.
+- **Next:** a number test through the chat (user rested) to find which
+  numbers Voiceitt writes reliably for this voice, then renumber using only
+  those, avoiding single digits and 30/40, 50/5 pairs.
