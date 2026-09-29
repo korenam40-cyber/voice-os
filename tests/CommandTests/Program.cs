@@ -120,10 +120,30 @@ var realMisses = new (string Heard, string Id)[]
     ("go to stop", "top"), ("nap right", "snap-right"), ("next tub", "next-tab"), ("Cancer", "cancel"),
     ("close windows", "close-window"), ("restore windows", "restore"), ("open file", "open-files"),
     ("Hide command", "hide-commands"), ("CLOSE tab", "close-tab"), ("rewind", "skip-back"),
+    // Second practice (2026-09-29, 12:24):
+    ("snap list", "snap-left"), ("knapsack", "snap-left"), ("paid down", "page-down"), ("new tube", "new-tab"),
+    ("new pub", "new-tab"), ("top key", "tab"), ("dropped it", "paste"), ("cat", "cut"), ("keep for", "skip-forward"),
+    ("reader", "redo"), ("read", "redo"),
 };
 var wrong = realMisses.Where(m => CommandMatcher.Match(m.Heard, set, out _)?.Command.Id != m.Id)
     .Select(m => $"\"{m.Heard}\" -> {CommandMatcher.Match(m.Heard, set, out string why)?.Command.Id ?? why}").ToList();
 Check("what Voiceitt really wrote in practice selects the right command", wrong.Count == 0, string.Join("; ", wrong));
+
+// Numbers (user's request, 2026-09-29): exact or nothing, and every way Voiceitt might write one.
+var numbered = set.Commands.Where(c => c.Number != null).ToList();
+Check("every command has a number", numbered.Count == set.Commands.Count);
+Check("no two commands share a number", numbered.Select(c => c.Number).Distinct().Count() == numbered.Count);
+Check("the first digit is the group", numbered.GroupBy(c => c.Group).All(g => g.Select(c => c.Number / 10).Distinct().Count() <= 2));
+var n43 = set.Commands.First(c => c.Number == 43);
+foreach (var said in new[] { "43", "43.", "forty three", "forty-three", "Forty three.", "number 43" })
+    Check($"\"{said}\" runs command 43", CommandMatcher.Match(said, set, out _)?.Command == n43);
+Check("a number no command has does nothing", CommandMatcher.Match("99", set, out _) == null);
+Check("a near number never runs a neighbour", CommandMatcher.Match("430", set, out _) == null);
+Check("a number inside words is not a number", !CommandMatcher.TryParseNumber("open 4 tabs", out _));
+L = new CommandListener(set);
+L.Offer("Computer, 43.", true, At(0));
+r = L.Tick(At(1.3));
+Check("\"Computer, 43\" runs command 43", r?.Outcome == CommandOutcome.Run && r.Match?.Command == n43, $"{r?.Outcome} {r?.Reason}");
 
 // Practice: nothing runs; each attempt is checked against the command on screen.
 var practice = new PracticeSession(set);

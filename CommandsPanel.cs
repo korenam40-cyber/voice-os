@@ -165,7 +165,7 @@ internal sealed class CommandsPanel : Form
             };
             var items = new Label
             {
-                Text = string.Join("\n", group.Select(c => c.Phrases[0])),
+                Text = string.Join("\n", group.Select(c => c.Number is int n ? $"{n,2}   {c.Phrases[0]}" : $"      {c.Phrases[0]}")),
                 Font = ItemFont,
                 ForeColor = Hud.Ink,
                 AutoSize = true,

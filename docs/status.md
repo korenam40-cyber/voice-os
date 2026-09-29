@@ -92,3 +92,20 @@ open age, open male, minimal, crawl up, paid up, close up, cut back, water
 use sound. "open edge" also came out "open health" and, eight times, "keep";
 the user prefers "open browser", now the primary phrasing (it worked first
 try). These real misses are regression checks in tests/CommandTests.
+
+## Second practice + numbers (2026-09-29, afternoon)
+
+- Second practice: 59/79 again, but **none of the first practice's misses
+  recurred** -- the fixes held; new misses were other commands. Several were
+  noise/fatigue ("{", "x", "xxx", "no", "is"). Added: snap list, knapsack,
+  paid down, new tube, new pub, top key, dropped it, cat, keep for, reader/read.
+- Once "snap left" came out as "close window" -- a command heard as another
+  command. That is the dangerous case.
+- **Numbers** (user's idea -- "numbers are easier for me to say"): every
+  command has a number shown in the panel; "Computer, 43" works like the words.
+  First digit = group (1-9 programs, 11-19 windows, 21-36 moving, 41-51
+  editing, 61-62 typing, 71-77 video, 81-88 settings). Numbers match exactly
+  or not at all; digits, words ("forty three") and "number 43" all work.
+- **Next:** a practice with numbers, while fresh, to see how Voiceitt writes
+  them (digits? words? "for" for 4?). Add what it writes to the number parser
+  only if it can't be confused with another number.

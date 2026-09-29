@@ -105,7 +105,7 @@ internal sealed class PracticeForm : Form
             var cmd = session.Current!;
             _progress.Text = $"Command {session.Index + 1} of {session.Count}   ·   {session.Right} right so far";
             _group.Text = (cmd.Group ?? "").ToUpperInvariant();
-            _say.Text = $"Say:  {cmd.Phrases[0]}";
+            _say.Text = cmd.Number is int n ? $"Say:  {n}   or   {cmd.Phrases[0]}" : $"Say:  {cmd.Phrases[0]}";
             _also.Text = cmd.Phrases.Count > 1 ? "also works: " + string.Join(", ", cmd.Phrases.Skip(1).Take(4)) : "";
         }
 

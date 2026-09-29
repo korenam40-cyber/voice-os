@@ -31,6 +31,10 @@ internal sealed class VoiceCommand
     public string Id { get; set; } = "";
     /// <summary>Spoken back after the command runs.</summary>
     public string? Say { get; set; }
+    /// <summary>What the user can say instead of the words: "Computer, 43". The user finds
+    /// numbers easier to say (2026-09-29). Matched exactly, never "close enough".</summary>
+    public int? Number { get; set; }
+
     /// <summary>Heading the command is listed under in the command panel.</summary>
     public string? Group { get; set; }
     /// <summary>What Voiceitt writes when the user says the command, in English.</summary>
@@ -205,6 +209,15 @@ internal static class CommandMatcher
         reason = "";
         if (norm.Length == 0) { reason = "nothing after the prefix"; return null; }
 
+        // A number is exact or nothing: "43" must never run 44 because it was close.
+        if (TryParseNumber(norm, out int number))
+        {
+            var byNumber = set.Commands.FirstOrDefault(c => c.Number == number);
+            if (byNumber != null) return new CommandMatch(byNumber, number.ToString(), 1.0);
+            reason = $"no command has the number {number}";
+            return null;
+        }
+
         CommandMatch? best = null;
         double runnerUp = 0;
         foreach (var cmd in set.Commands)
@@ -239,6 +252,36 @@ internal static class CommandMatcher
             return null;
         }
         return best;
+    }
+
+    private static readonly Dictionary<string, int> NumberWords = new()
+    {
+        ["zero"] = 0, ["one"] = 1, ["two"] = 2, ["three"] = 3, ["four"] = 4, ["five"] = 5, ["six"] = 6,
+        ["seven"] = 7, ["eight"] = 8, ["nine"] = 9, ["ten"] = 10, ["eleven"] = 11, ["twelve"] = 12,
+        ["thirteen"] = 13, ["fourteen"] = 14, ["fifteen"] = 15, ["sixteen"] = 16, ["seventeen"] = 17,
+        ["eighteen"] = 18, ["nineteen"] = 19, ["twenty"] = 20, ["thirty"] = 30, ["forty"] = 40,
+        ["fifty"] = 50, ["sixty"] = 60, ["seventy"] = 70, ["eighty"] = 80, ["ninety"] = 90,
+    };
+
+    /// <summary>
+    /// The whole utterance as a number: "43", "forty three", "forty-three" (already normalized
+    /// to "forty three"), optionally after the word "number". Anything else is not a number --
+    /// "open 4 tabs" is words, not command 4.
+    /// </summary>
+    public static bool TryParseNumber(string normalized, out int number)
+    {
+        number = 0;
+        var words = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+        if (words.Count > 1 && words[0] == "number") words.RemoveAt(0);
+        if (words.Count == 1 && int.TryParse(words[0], out number)) return number >= 0 && number < 1000;
+        if (words.Count == 1 && NumberWords.TryGetValue(words[0], out number)) return true;
+        if (words.Count == 2 && NumberWords.TryGetValue(words[0], out int tens) && tens >= 20 && tens % 10 == 0
+            && NumberWords.TryGetValue(words[1], out int ones) && ones is >= 1 and <= 9)
+        {
+            number = tens + ones;
+            return true;
+        }
+        return false;
     }
 
     /// <summary>1 − edit distance / longer length, on characters.</summary>
