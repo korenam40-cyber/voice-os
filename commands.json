@@ -60,6 +60,7 @@
     { "id": "this-is-browser",  "say": "OK, this is your browser", "group": "Programs",  "phrases": [ "this is my browser", "this is the browser", "this is edge" ], "action": { "type": "assign", "value": "open-edge" } },
     { "id": "this-is-mail",     "say": "OK, this is your mail", "group": "Programs",     "phrases": [ "this is my mail", "this is mail", "this is the mail" ], "action": { "type": "assign", "value": "open-mail" } },
     { "id": "this-is-terminal", "say": "OK, this is your terminal", "group": "Programs", "phrases": [ "this is my terminal", "this is the terminal", "this is claude" ], "action": { "type": "assign", "value": "open-terminal" } },
+    { "id": "practice",        "say": "let's practice", "group": "This panel and settings", "phrases": [ "practice commands", "practice mode", "let's practice" ], "action": { "type": "practice" } },
     { "id": "show-commands",   "say": "here they are", "group": "This panel and settings",  "phrases": [ "show commands", "what can i say", "help" ], "action": { "type": "panel", "value": "show" } },
     { "id": "hide-commands",   "say": "hidden", "group": "This panel and settings",         "phrases": [ "hide commands", "close commands", "hide help" ], "action": { "type": "panel", "value": "hide" } },
     { "id": "edit-commands",    "say": "opening the command list", "group": "This panel and settings",  "phrases": [ "edit commands", "open command list", "change commands" ], "action": { "type": "edit-commands" } },

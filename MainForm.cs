@@ -392,6 +392,8 @@ internal sealed class MainForm : Form
     }
 
     private CommandsPanel? _commandsPanel;
+    private PracticeForm? _practiceForm;
+    private PracticeSession? _lastPractice;
     private readonly System.Windows.Forms.Timer _bridgeWatch = new() { Interval = 2000 };
 
     private void ShowCommandsPanel()
@@ -409,6 +411,15 @@ internal sealed class MainForm : Form
         _engine.StartConnector();
         _engine.CommandPanelRequested += show => { if (show) ShowCommandsPanel(); else _commandsPanel?.Hide(); };
         _engine.CommandsChanged += () => { if (_commandsPanel?.Visible == true) ShowCommandsPanel(); };
+        _engine.PracticeUpdated += attempt =>
+        {
+            var session = _engine.Practice;
+            if (session == null && attempt == null) return;
+            if (_practiceForm == null || _practiceForm.IsDisposed) _practiceForm = new PracticeForm();
+            // The session is cleared once finished; the form still shows its summary.
+            _practiceForm.ShowState(session ?? _lastPractice!, attempt);
+            if (session != null) _lastPractice = session;
+        };
         _engine.LoadVoiceCommands();
         // Shown at every start: the user can't be expected to remember "show commands" either.
         ShowCommandsPanel();

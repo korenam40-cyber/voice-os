@@ -10,7 +10,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../../VoiceCommands.cs;../../CommandListener.cs;../../KeyChord.cs;../../ToneWav.cs" />
+    <Compile Include="../../VoiceCommands.cs;../../CommandListener.cs;../../KeyChord.cs;../../ToneWav.cs;../../PracticeSession.cs" />
     <EmbeddedResource Include="../../commands.json" LogicalName="commands.json" />
   </ItemGroup>
 </Project>

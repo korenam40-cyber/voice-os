@@ -109,5 +109,26 @@ Check("and it remembers the program and where it lives",
 Check("a command that isn't a program can't be connected", !copy.AssignApp("copy", @"C:\x.exe"));
 Check("the sounds are real WAV data", ToneWav.Make((880, 0.1)).Take(4).SequenceEqual("RIFF"u8.ToArray()));
 
+// Practice: nothing runs; each attempt is checked against the command on screen.
+var practice = new PracticeSession(set);
+Check("practice covers the commands, not itself", practice.Count == set.Commands.Count(c => c.Action.Type != "practice"));
+var first = practice.Current!;
+var a = practice.Attempt(first.Phrases[0]);
+Check("saying the command is right, and moves on", a.Outcome == PracticeOutcome.Right && practice.Index == 1);
+var second = practice.Current!;
+a = practice.Attempt("Computer, " + second.Phrases[0]);
+Check("the wake word may be said in practice", a.Outcome == PracticeOutcome.Right);
+var third = practice.Current!;
+a = practice.Attempt("banana bread");
+Check("nonsense is not understood, and stays on the same command",
+      a.Outcome == PracticeOutcome.NotUnderstood && practice.Current == third && practice.Misses.Count == 1);
+string other = set.Commands.First(c => c.Id != third.Id && c.Action.Type != "practice").Phrases[0];
+a = practice.Attempt(other);
+Check("another command is reported as that command", a.Outcome == PracticeOutcome.OtherCommand && a.MatchedInstead != null);
+a = practice.Attempt("skip");
+Check("skip moves on without counting as right", a.Outcome == PracticeOutcome.Skipped && practice.Current != third && practice.Right == 2);
+a = practice.Attempt("stop practice");
+Check("stop practice finishes", a.Outcome == PracticeOutcome.Finished && practice.Done);
+
 Console.WriteLine($"\n{passed}/{passed + failed} passed");
 return failed == 0 ? 0 : 1;

@@ -61,3 +61,17 @@ short.**
   the connector once, say "Computer, scroll down". Ask what they saw and heard.
 - **Open questions for Baby** (answer when ready): voice age and English
   accent; look (orb / drawn face / 3D); appear on the TV or not.
+
+## 2026-09-29
+
+- **Download instead of build.** GitHub builds `VoiceOS.exe` on every push to
+  main and puts it on the "latest" release (`.github/workflows/build.yml`).
+  The user had looked for an exe and found none: they are not expected to build.
+- **Practice mode** (user asked; option 2 over a Hebrew command bank):
+  "Computer, practice commands". Nothing is carried out; misses show what
+  Voiceitt wrote. Attempts logged to `%APPDATA%\VoiceOS\practice.jsonl` --
+  ask the user for its misses to tune phrasings.
+- **Not built, deliberately deferred:** the Hebrew command bank in the
+  recorder (plan step 2e). It belongs to Hebrew commands, which wait until the
+  Hebrew model is good enough; the user chose English-through-Voiceitt first.
+  The recorder being "empty" is because all 540 prompts are recorded.

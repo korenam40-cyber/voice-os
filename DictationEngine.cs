@@ -198,9 +198,91 @@ internal sealed class DictationEngine : IDisposable
     }
 
     /// <summary>Settles held command text and runs what it names. Called on every poll.</summary>
+    // ---- Practice ("Computer, practice commands") -----------------------------------------
+    // While practising, Voiceitt's text is neither typed nor carried out: each utterance is
+    // checked against the command on screen, and the result shown. Nothing happens to any window.
+
+    private PracticeSession? _practice;
+    private bool _practiceHolding;
+    private int _practiceStart;
+    private string _practiceText = "";
+    private DateTime _practiceChanged;
+
+    public PracticeSession? Practice => _practice;
+
+    /// <summary>Raised when practice starts (null) and after every attempt.</summary>
+    public event Action<PracticeAttempt?>? PracticeUpdated;
+
+    public void StartPractice()
+    {
+        if (_commands == null) return;
+        _commands.Reset();
+        _practice = new PracticeSession(_commands.Commands);
+        _practiceHolding = false;
+        Log?.Invoke($"PRACTICE: {_practice.Count} commands. Nothing is carried out while practising.");
+        PracticeUpdated?.Invoke(null);
+    }
+
+    public void StopPractice()
+    {
+        if (_practice == null) return;
+        var done = _practice;
+        _practice = null;
+        Log?.Invoke($"PRACTICE finished: {done.Right} of {done.Attempts} attempts right.");
+    }
+
+    /// <summary>Settles one practice utterance and checks it. Called on every poll.</summary>
+    private void ResolvePractice()
+    {
+        if (_practice == null || !_practiceHolding) return;
+        if (DateTime.Now - _practiceChanged < TimeSpan.FromSeconds(1.2)) return;
+        _practiceHolding = false;
+        string heard = _practiceText.Trim();
+        if (heard.Length == 0) return;
+
+        var attempt = _practice.Attempt(heard);
+        WritePracticeLog(attempt);
+        _feedback.Give(attempt.Outcome switch
+        {
+            PracticeOutcome.Right => FeedbackKind.Done,
+            PracticeOutcome.Skipped or PracticeOutcome.Finished => FeedbackKind.Listening,
+            _ => FeedbackKind.NotUnderstood,
+        }, attempt.Outcome == PracticeOutcome.Right ? "right" : "try again");
+        PracticeUpdated?.Invoke(attempt);
+        if (_practice.Done) StopPractice();
+    }
+
+    /// <summary>Every attempt, as text, so the phrasings can be tuned from real results.
+    /// Local only: %APPDATA%\VoiceOS\practice.jsonl.</summary>
+    private static void WritePracticeLog(PracticeAttempt a)
+    {
+        try
+        {
+            string dir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VoiceOS");
+            System.IO.Directory.CreateDirectory(dir);
+            string line = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                time = DateTime.Now.ToString("s"),
+                command = a.Target?.Id,
+                expected = a.Target?.Phrases.FirstOrDefault(),
+                heard = a.Heard,
+                result = a.Outcome.ToString(),
+                matched = a.MatchedInstead?.Id,
+                reason = a.Reason,
+            });
+            System.IO.File.AppendAllText(System.IO.Path.Combine(dir, "practice.jsonl"), line + "\n");
+        }
+        catch
+        {
+            // The log helps tuning; losing a line must never interrupt practice.
+        }
+    }
+
     private void ResolveCommands()
     {
         _executor?.Tick();
+        ResolvePractice();
+        if (_practice != null) return;
         if (_commands == null) return;
         var r = _commands.Tick(DateTime.Now);
         if (r == null) return;
@@ -249,6 +331,10 @@ internal sealed class DictationEngine : IDisposable
                 break;
             case "edit-commands":
                 error = OpenCommandsFile();
+                break;
+            case "practice":
+                StartPractice();
+                error = null;
                 break;
             case "panel":
                 if (CommandPanelRequested == null) { error = "the command panel isn't available"; break; }
@@ -732,6 +818,21 @@ internal sealed class DictationEngine : IDisposable
         DateTime now = DateTime.Now;
         bool utteranceStart = EndsUtterance(_lastText) || now - _lastBoxChange >= UtterancePause;
         _lastBoxChange = now;
+        if (_practice != null)
+        {
+            // Practising: the words go to the practice screen, never into a window.
+            if (!_practiceHolding)
+            {
+                _practiceHolding = true;
+                _practiceStart = Math.Max(0, newText.Length - toType.Length);
+            }
+            _practiceText = _practiceStart <= newText.Length ? newText[_practiceStart..] : newText;
+            _practiceChanged = now;
+            _lastText = newText;
+            LastSeenText = newText;
+            return;
+        }
+
         bool held = false;
         if (backspaces == 0 && VoiceCommandsEnabled && _commands != null)
         {

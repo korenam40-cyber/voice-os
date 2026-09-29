@@ -28,11 +28,16 @@ start while the bridge is open, and pauses itself if the bridge is opened.
     so Voiceitt never types its voice.
   - "Computer, this is my mail" connects a command to the program in front.
     "Computer, edit commands" opens the list in Notepad.
+- **Practice** -- "Computer, practice commands" shows one command at a time;
+  say it and see whether it was understood. Nothing is carried out. Every try
+  is saved as text in `%APPDATA%\VoiceOS\practice.jsonl` for tuning phrasings.
 - **Baby** (planned) -- see `docs/requirements.md` and `docs/plan.md`.
 
 ## Setup
 
-- Build: `dotnet publish -c Release` (Windows, .NET 9 SDK) gives one `VoiceOS.exe`.
+- **Download**: https://github.com/korenam40-cyber/voice-os/releases/tag/latest --
+  `VoiceOS.exe`, rebuilt by GitHub on every change. (To build yourself:
+  `dotnet publish -c Release`, Windows, .NET 9 SDK.)
 - Chrome connector: Voice OS has its **own** connector (port 47623; the bridge
   uses 47613). Use the connector button once and follow the steps ("Load
   unpacked" in chrome://extensions).
