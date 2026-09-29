@@ -392,6 +392,15 @@ internal sealed class MainForm : Form
     }
 
     private CommandsPanel? _commandsPanel;
+
+    private void UpdatePanelLight()
+    {
+        if (_engine == null || _commandsPanel == null || _commandsPanel.IsDisposed) return;
+        bool connected = _engine.ConnectorLive
+            || (_engine.LastSuccessfulPoll is DateTime t && (DateTime.Now - t).TotalSeconds < 5);
+        string target = _engine.TargetWindowHandle == IntPtr.Zero ? "(no window chosen)" : Shorten(_engine.TargetWindowTitle, 40);
+        _commandsPanel.SetStatus(connected, _engine.IsPaused, _engine.TypingEnabled, target);
+    }
     private PracticeForm? _practiceForm;
     private PracticeSession? _lastPractice;
     private readonly System.Windows.Forms.Timer _bridgeWatch = new() { Interval = 2000 };
@@ -401,6 +410,7 @@ internal sealed class MainForm : Form
         if (_engine?.Commands == null) return;
         if (_commandsPanel == null || _commandsPanel.IsDisposed) _commandsPanel = new CommandsPanel();
         _commandsPanel.ShowCommands(_engine.Commands);
+        UpdatePanelLight();
     }
 
     private void OnLoaded()
@@ -428,6 +438,9 @@ internal sealed class MainForm : Form
         // OS is the one that must step aside -- otherwise every word is typed twice.
         _bridgeWatch.Tick += (_, _) =>
         {
+            // Also keeps the panel's light honest when Voiceitt goes quiet: no text arriving
+            // means no status events, so it is checked on this timer too.
+            UpdatePanelLight();
             if (_engine == null || _engine.IsPaused) return;
             if (System.Diagnostics.Process.GetProcessesByName("VoiceittBridge").Length == 0) return;
             _engine.TogglePause();
@@ -968,6 +981,7 @@ internal sealed class MainForm : Form
         if (_engine == null) return;
 
         bool linked = _engine.IsCalibrated;
+        UpdatePanelLight();
         if (!string.IsNullOrEmpty(_engine.ActionNeeded))
         {
             // Something needs the user's attention — replace the normal status with

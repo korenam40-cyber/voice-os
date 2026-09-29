@@ -15,6 +15,7 @@ internal sealed class CommandsPanel : Form
 {
     private readonly FlowLayoutPanel _flow;
     private readonly Label _header;
+    private readonly Label _status;
 
     private static readonly Font GroupFont = new("Segoe UI Semibold", 11f);
     private static readonly Font ItemFont = new("Segoe UI", 11f);
@@ -53,6 +54,19 @@ internal sealed class CommandsPanel : Form
         close.Click += (_, _) => Hide();
         _header.Controls.Add(close);
 
+        // The connection light (user's request, 2026-09-29): is Voiceitt connected, and
+        // where does dictation go -- visible without opening the main window.
+        _status = new Label
+        {
+            Dock = DockStyle.Top,
+            Height = 30,
+            Font = GroupFont,
+            ForeColor = Hud.Dim,
+            TextAlign = ContentAlignment.MiddleLeft,
+            AutoEllipsis = true,
+            Text = "●  Checking the connection to Voiceitt…",
+        };
+
         _flow = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
@@ -74,6 +88,7 @@ internal sealed class CommandsPanel : Form
 
         Controls.Add(_flow);
         Controls.Add(footer);
+        Controls.Add(_status);
         Controls.Add(_header);
     }
 
@@ -97,6 +112,34 @@ internal sealed class CommandsPanel : Form
         base.OnPaint(e);
         using var pen = new Pen(Hud.Line, 2);
         e.Graphics.DrawRectangle(pen, 1, 1, Width - 3, Height - 3);
+    }
+
+    /// <summary>
+    /// The connection light. Green: Voiceitt connected and typing. Yellow: connected, but
+    /// typing is off (commands only). Red: not connected, or paused.
+    /// </summary>
+    public void SetStatus(bool connected, bool paused, bool typing, string target)
+    {
+        string text; Color color;
+        if (!connected)
+        {
+            (text, color) = ("●  Voiceitt NOT connected — open Voiceitt in Chrome, or reload its tab (F5)", Hud.RedText);
+        }
+        else if (paused)
+        {
+            (text, color) = ("●  Voiceitt connected — PAUSED (Ctrl+Alt+P to resume)", Hud.RedText);
+        }
+        else if (!typing)
+        {
+            (text, color) = ("●  Voiceitt connected — typing OFF, listening for commands", Color.FromArgb(255, 205, 80));
+        }
+        else
+        {
+            (text, color) = ($"●  Voiceitt connected — typing into {target}", Hud.Ok);
+        }
+        if (_status.Text == text && _status.ForeColor == color) return;
+        _status.Text = text;
+        _status.ForeColor = color;
     }
 
     /// <summary>Fill the panel from the loaded commands and size it to fit the screen.</summary>
@@ -137,7 +180,7 @@ internal sealed class CommandsPanel : Form
         // Tall enough for the longest group, as tall as the screen allows, then as many
         // columns as that takes. Placed on the right edge, where it covers the least.
         var area = Screen.PrimaryScreen?.WorkingArea ?? new Rectangle(0, 0, 1280, 720);
-        int chrome = Padding.Vertical + 34 + 26 + 8;
+        int chrome = Padding.Vertical + 34 + 30 + 26 + 8;
         int tallest = _flow.Controls.Cast<Control>().Max(c => c.PreferredSize.Height + c.Margin.Vertical);
         int height = Math.Min(area.Height - 40, Math.Max(tallest + chrome, 420));
         int columnHeight = height - chrome;
