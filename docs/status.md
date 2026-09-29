@@ -75,3 +75,11 @@ short.**
   recorder (plan step 2e). It belongs to Hebrew commands, which wait until the
   Hebrew model is good enough; the user chose English-through-Voiceitt first.
   The recorder being "empty" is because all 540 prompts are recorded.
+
+## First run on Windows (2026-09-29) -- it works
+
+- The user downloaded VoiceOS.exe, set up the connector, and the panel's
+  light is **green**: Voiceitt connected, typing into the chosen window.
+  The connector at first did not connect; the Desktop log and the panel light
+  were added while finding out. It connected after the user redid the steps.
+- **Next:** first real commands ("Computer, scroll down"), then practice mode.
